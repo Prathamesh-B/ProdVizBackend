@@ -1,0 +1,6 @@
+django
+pandas
+mysqlclient
+openpyxl
+djangorestframework
+django-cors-headers
