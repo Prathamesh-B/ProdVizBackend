@@ -6,7 +6,7 @@ class ProductionLine(models.Model):
     name = models.CharField(max_length=255)
     status = models.CharField(max_length=255)
     inactive = models.BooleanField(default=False)
-    modified = models.CharField(max_length=255)
+    modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'ap_ProductionLine'
@@ -23,7 +23,7 @@ class Tag(models.Model):
     min_val = models.IntegerField()
     max_val = models.IntegerField()
     inactive = models.BooleanField(default=False)
-    modified = models.CharField(max_length=255)
+    modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'ap_Tag'
@@ -40,7 +40,7 @@ class Log(models.Model):
     tag = models.ForeignKey(Tag, on_delete=models.DO_NOTHING, null=True)
     value = models.IntegerField()
     inactive = models.BooleanField(default=False)
-    modified = models.CharField(max_length=255)
+    modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'ap_Log'
@@ -57,16 +57,16 @@ class Alert(models.Model):
     timestamp = models.DateTimeField(default=timezone.now)
     line = models.ForeignKey(ProductionLine, on_delete=models.DO_NOTHING, null=True)
     tag = models.ForeignKey(Tag, on_delete=models.DO_NOTHING, null=True)
-    report_title = models.CharField(max_length=255)
-    report_type = models.CharField(max_length=255)
-    report_category = models.CharField(max_length=255)
-    report_sub_cat = models.CharField(max_length=255)
-    location = models.CharField(max_length=255)
-    incident_dtls = models.CharField(max_length=1000)
-    issued = models.CharField(max_length=255)
-    role = models.CharField(max_length=255)
+    report_title = models.CharField(max_length=255, null=True)
+    report_type = models.CharField(max_length=255, null=True)
+    report_category = models.CharField(max_length=255, null=True)
+    report_sub_cat = models.CharField(max_length=255, null=True)
+    location = models.CharField(max_length=255, null=True)
+    incident_dtls = models.CharField(max_length=1000, null=True)
+    issued = models.CharField(max_length=255, null=True)
+    role = models.CharField(max_length=255, null=True)
     inactive = models.BooleanField(default=False)
-    modified = models.CharField(max_length=255)
+    modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'ap_Alert'
