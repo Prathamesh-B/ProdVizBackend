@@ -7,7 +7,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         # Load the Excel file
-        file_path = 'main\management\commands\log_data_15min_interval_new.xlsx'
+        file_path = 'main\management\commands\log_data_15min_interval_new_v5.xlsx'
         excel_data = pd.ExcelFile(file_path)
 
         # Import data from the 'ProductionLine' sheet
