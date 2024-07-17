@@ -98,6 +98,60 @@ class LogViewSet(viewsets.ModelViewSet):
     queryset = Log.objects.all()
     serializer_class = LogSerializer
 
-class AlertViewSet(viewsets.ModelViewSet):
-    queryset = Alert.objects.all()
-    serializer_class = AlertSerializer
+
+class AlertView(APIView):
+
+    def get(self, request):
+        start_date = request.query_params.get('start')
+        end_date = request.query_params.get('end')
+
+        if start_date and end_date:
+            start_date = parse_datetime(start_date)
+            end_date = parse_datetime(end_date)
+            alerts = Alert.objects.filter(timestamp__range=[start_date, end_date])
+        else:
+            alerts = Alert.objects.all().order_by('-timestamp')[:25]
+
+        serializer = AlertSerializer(alerts, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = AlertSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, pk):
+        try:
+            alert = Alert.objects.get(pk=pk)
+        except Alert.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AlertSerializer(alert, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+    def patch(self, request, pk):
+        try:
+            alert = Alert.objects.get(pk=pk)
+        except Alert.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AlertSerializer(alert, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, pk):
+        try:
+            alert = Alert.objects.get(pk=pk)
+        except Alert.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        alert.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
