@@ -102,13 +102,17 @@ class LogViewSet(viewsets.ModelViewSet):
 class AlertView(APIView):
 
     def get(self, request):
-        start_date = request.query_params.get('start')
-        end_date = request.query_params.get('end')
+        line_id = request.query_params.get('Line', None)
+        start_date = request.query_params.get('StartDate')
+        end_date = request.query_params.get('EndDate')
 
         if start_date and end_date:
             start_date = parse_datetime(start_date)
             end_date = parse_datetime(end_date)
             alerts = Alert.objects.filter(timestamp__range=[start_date, end_date])
+            if line_id:
+                alerts = alerts.filter(line=line_id)
+
         else:
             alerts = Alert.objects.all().order_by('-timestamp')[:25]
 
