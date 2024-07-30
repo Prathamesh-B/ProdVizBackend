@@ -5,7 +5,9 @@ from rest_framework import viewsets, status
 from .models import ProductionLine, Tag, Log, Alert
 from .serializers import ProductionLineSerializer, TagSerializer, LogSerializer, AlertSerializer
 from django.utils.dateparse import parse_datetime
+from django.utils import timezone
 from django.db.models import Sum
+import random
 
 class LogView(APIView):
     def get(self, request):
@@ -100,7 +102,6 @@ class LogViewSet(viewsets.ModelViewSet):
 
 
 class AlertView(APIView):
-
     def get(self, request):
         line_id = request.query_params.get('Line', None)
         start_date = request.query_params.get('StartDate')
@@ -159,3 +160,48 @@ class AlertView(APIView):
 
         alert.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class ControlPanelDataView(APIView):
+    def post(self, request):
+        production_lines = ProductionLine.objects.filter(inactive=False)
+        tags = Tag.objects.filter(inactive=False)
+        
+        logs = []
+        timestamp = timezone.localtime(timezone.now())
+        
+        for line in production_lines:
+            for tag in tags:
+                if tag.name == 'Watts Consumed':
+                    value = request.data.get('Vry', 0)
+                elif tag.name == 'Voltage Phase R-Y':
+                    value = request.data.get('Vry', 0)
+                elif tag.name == 'Voltage Phase Y-B':
+                    value = request.data.get('Vyb', 0)
+                elif tag.name == 'Voltage Phase B-R':
+                    value = request.data.get('Vbr', 0)
+                elif tag.name == 'Current Phase R':
+                    value = request.data.get('Cr', 0)
+                elif tag.name == 'Current Phase Y':
+                    value = request.data.get('Cy', 0)
+                elif tag.name == 'Current Phase B':
+                    value = request.data.get('Cb', 0)
+                elif tag.name == 'Frequency':
+                    value = request.data.get('Freq', 0)
+                elif tag.name == 'Temperature':
+                    value = request.data.get('Temp', 0)
+                else:
+                    value = random.uniform(tag.min_val, tag.max_val)
+
+                value = max(min(value, tag.max_val), tag.min_val)
+
+                log = Log(
+                    timestamp=timestamp,
+                    line=line,
+                    tag=tag,
+                    value=value
+                )
+                logs.append(log)
+
+        Log.objects.bulk_create(logs)
+
+        return Response({"message": "Data logged successfully"}, status=status.HTTP_201_CREATED)
