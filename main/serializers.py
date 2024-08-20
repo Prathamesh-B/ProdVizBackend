@@ -1,22 +1,67 @@
 from rest_framework import serializers
-from .models import ProductionLine, Tag, Log, Alert
+from .models import (
+    AuthRole, AuthUser, Plant, Block, Line, Machine, 
+    SensorTagType, SensorTag, DaqLog, Alert, Incident, 
+    IncidentTransaction
+)
 
-class ProductionLineSerializer(serializers.ModelSerializer):
+class AuthRoleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ProductionLine
+        model = AuthRole
         fields = '__all__'
 
-class TagSerializer(serializers.ModelSerializer):
+class AuthUserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Tag
+        model = AuthUser
+        fields = '__all__'
+        extra_kwargs = {'password': {'write_only': True}}
+
+class PlantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Plant
         fields = '__all__'
 
-class LogSerializer(serializers.ModelSerializer):
+class BlockSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Log
+        model = Block
+        fields = '__all__'
+
+class LineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Line
+        fields = '__all__'
+
+class MachineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Machine
+        fields = '__all__'
+
+class SensorTagTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SensorTagType
+        fields = '__all__'
+
+class SensorTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SensorTag
+        fields = '__all__'
+
+class DaqLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DaqLog
         fields = '__all__'
 
 class AlertSerializer(serializers.ModelSerializer):
     class Meta:
         model = Alert
+        fields = '__all__'
+
+class IncidentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Incident
+        fields = '__all__'
+
+class IncidentTransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IncidentTransaction
         fields = '__all__'

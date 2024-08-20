@@ -90,7 +90,7 @@ WSGI_APPLICATION = 'ProdVizBackend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'prodviz_api',
+        'NAME': 'prodviz',
         'USER': 'root',
         'PASSWORD': '',
         'PORT': 3306,

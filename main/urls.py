@@ -1,17 +1,19 @@
-# urls.py
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ProductionLineViewSet, TagViewSet, AlertView, LogView, MachinePerformanceView, ControlPanelDataView
+from .views import (
+    LineViewSet, SensorTagViewSet, MachineViewSet, AlertView, DaqLogView, 
+    MachinePerformanceView, ControlPanelDataView
+)
 
 router = DefaultRouter()
-router.register(r'productionlines', ProductionLineViewSet)
-router.register(r'tags', TagViewSet)
+router.register(r'lines', LineViewSet)
+router.register(r'sensortags', SensorTagViewSet)
+router.register(r'machines', MachineViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('logs/', LogView.as_view(), name='logs'),
+    path('alerts/', AlertView.as_view(), name='alerts'),
+    path('daqlogs/', DaqLogView.as_view(), name='daqlogs'),
     path('machine-performance/', MachinePerformanceView.as_view(), name='machine-performance'),
-    path('alerts/', AlertView.as_view(), name='alert-list'),
-    path('alerts/<int:pk>', AlertView.as_view(), name='alert-detail'),
     path('control-panel-data/', ControlPanelDataView.as_view(), name='control-panel-data'),
 ]
