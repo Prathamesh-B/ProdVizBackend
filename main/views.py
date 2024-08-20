@@ -1,15 +1,17 @@
-# views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import viewsets, status
-from .models import ProductionLine, Tag, Log, Alert
-from .serializers import ProductionLineSerializer, TagSerializer, LogSerializer, AlertSerializer
+from .models import Line, SensorTag, DaqLog, Alert, Plant, Block, Machine
+from .serializers import (
+    LineSerializer, SensorTagSerializer, DaqLogSerializer, AlertSerializer,
+    PlantSerializer, BlockSerializer, MachineSerializer
+)
 from django.utils.dateparse import parse_datetime
 from django.utils import timezone
 from django.db.models import Sum
 import random
 
-class LogView(APIView):
+class DaqLogView(APIView):
     def get(self, request):
         line_id = request.query_params.get('LineId')
         tag_id = request.query_params.get('TagId')
@@ -33,13 +35,13 @@ class LogView(APIView):
         if start_date >= end_date:
             return Response({"error": "StartDate must be before EndDate."}, status=status.HTTP_400_BAD_REQUEST)
 
-        queryset = Log.objects.filter(
-            line_id=line_id,
+        queryset = DaqLog.objects.filter(
+            tag__machine__line_id=line_id,
             tag_id=tag_id,
             timestamp__range=(start_date, end_date)
         )
 
-        serializer = LogSerializer(queryset, many=True)
+        serializer = DaqLogSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class MachinePerformanceView(APIView):
@@ -64,12 +66,12 @@ class MachinePerformanceView(APIView):
         if start_date >= end_date:
             return Response({"error": "StartDate must be before EndDate."}, status=status.HTTP_400_BAD_REQUEST)
 
-        production_lines = ProductionLine.objects.all()
+        lines = Line.objects.all()
         performance_data = []
 
-        for line in production_lines:
-            logs = Log.objects.filter(
-                line=line,
+        for line in lines:
+            logs = DaqLog.objects.filter(
+                tag__machine__line=line,
                 timestamp__range=(start_date, end_date)
             )
 
@@ -88,18 +90,17 @@ class MachinePerformanceView(APIView):
 
         return Response(performance_data, status=status.HTTP_200_OK)
 
-class ProductionLineViewSet(viewsets.ModelViewSet):
-    queryset = ProductionLine.objects.all()
-    serializer_class = ProductionLineSerializer
+class LineViewSet(viewsets.ModelViewSet):
+    queryset = Line.objects.all()
+    serializer_class = LineSerializer
 
-class TagViewSet(viewsets.ModelViewSet):
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
+class SensorTagViewSet(viewsets.ModelViewSet):
+    queryset = SensorTag.objects.all()
+    serializer_class = SensorTagSerializer
 
-class LogViewSet(viewsets.ModelViewSet):
-    queryset = Log.objects.all()
-    serializer_class = LogSerializer
-
+class DaqLogViewSet(viewsets.ModelViewSet):
+    queryset = DaqLog.objects.all()
+    serializer_class = DaqLogSerializer
 
 class AlertView(APIView):
     def get(self, request):
@@ -113,7 +114,6 @@ class AlertView(APIView):
             alerts = Alert.objects.filter(timestamp__range=[start_date, end_date])
             if line_id:
                 alerts = alerts.filter(line=line_id)
-
         else:
             alerts = Alert.objects.all().order_by('-timestamp')[:25]
 
@@ -138,7 +138,6 @@ class AlertView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
     def patch(self, request, pk):
         try:
@@ -163,45 +162,57 @@ class AlertView(APIView):
 
 class ControlPanelDataView(APIView):
     def post(self, request):
-        production_lines = ProductionLine.objects.filter(inactive=False)
-        tags = Tag.objects.filter(inactive=False)
+        lines = Line.objects.filter(status='active')
+        sensor_tags = SensorTag.objects.all()
         
         logs = []
         timestamp = timezone.localtime(timezone.now())
         
-        for line in production_lines:
-            for tag in tags:
-                if tag.name == 'Watts Consumed':
-                    value = request.data.get('Vry', 0)
-                elif tag.name == 'Voltage Phase R-Y':
-                    value = request.data.get('Vry', 0)
-                elif tag.name == 'Voltage Phase Y-B':
-                    value = request.data.get('Vyb', 0)
-                elif tag.name == 'Voltage Phase B-R':
-                    value = request.data.get('Vbr', 0)
-                elif tag.name == 'Current Phase R':
-                    value = request.data.get('Cr', 0)
-                elif tag.name == 'Current Phase Y':
-                    value = request.data.get('Cy', 0)
-                elif tag.name == 'Current Phase B':
-                    value = request.data.get('Cb', 0)
-                elif tag.name == 'Frequency':
-                    value = request.data.get('Freq', 0)
-                elif tag.name == 'Temperature':
-                    value = request.data.get('Temp', 0)
-                else:
-                    value = random.uniform(tag.min_val, tag.max_val)
+        for line in lines:
+            for machine in Machine.objects.filter(line=line):
+                for tag in sensor_tags.filter(machine=machine):
+                    if tag.name == 'Watts Consumed':
+                        value = request.data.get('Vry', 0)
+                    elif tag.name == 'Voltage Phase R-Y':
+                        value = request.data.get('Vry', 0)
+                    elif tag.name == 'Voltage Phase Y-B':
+                        value = request.data.get('Vyb', 0)
+                    elif tag.name == 'Voltage Phase B-R':
+                        value = request.data.get('Vbr', 0)
+                    elif tag.name == 'Current Phase R':
+                        value = request.data.get('Cr', 0)
+                    elif tag.name == 'Current Phase Y':
+                        value = request.data.get('Cy', 0)
+                    elif tag.name == 'Current Phase B':
+                        value = request.data.get('Cb', 0)
+                    elif tag.name == 'Frequency':
+                        value = request.data.get('Freq', 0)
+                    elif tag.name == 'Temperature':
+                        value = request.data.get('Temp', 0)
+                    else:
+                        value = random.uniform(tag.min_val, tag.max_val)
 
-                value = max(min(value, tag.max_val), tag.min_val)
+                    value = max(min(value, tag.max_val), tag.min_val)
 
-                log = Log(
-                    timestamp=timestamp,
-                    line=line,
-                    tag=tag,
-                    value=value
-                )
-                logs.append(log)
+                    log = DaqLog(
+                        timestamp=timestamp,
+                        tag=tag,
+                        value=value
+                    )
+                    logs.append(log)
 
-        Log.objects.bulk_create(logs)
+        DaqLog.objects.bulk_create(logs)
 
         return Response({"message": "Data logged successfully"}, status=status.HTTP_201_CREATED)
+
+class PlantViewSet(viewsets.ModelViewSet):
+    queryset = Plant.objects.all()
+    serializer_class = PlantSerializer
+
+class BlockViewSet(viewsets.ModelViewSet):
+    queryset = Block.objects.all()
+    serializer_class = BlockSerializer
+
+class MachineViewSet(viewsets.ModelViewSet):
+    queryset = Machine.objects.all()
+    serializer_class = MachineSerializer
