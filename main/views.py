@@ -1,10 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import viewsets, status
-from .models import Line, SensorTag, DaqLog, Alert, Plant, Block, Machine
+from .models import Line, SensorTag, DaqLog, Alert, Plant, Block, Machine, AuthUser, AuthRole
 from .serializers import (
     LineSerializer, SensorTagSerializer, DaqLogSerializer, AlertSerializer,
-    PlantSerializer, BlockSerializer, MachineSerializer
+    PlantSerializer, BlockSerializer, MachineSerializer, AuthRoleSerializer, AuthUserSerializer
 )
 from django.utils.dateparse import parse_datetime
 from django.utils import timezone
@@ -116,6 +116,14 @@ class BlockViewSet(viewsets.ModelViewSet):
 class MachineViewSet(viewsets.ModelViewSet):
     queryset = Machine.objects.all()
     serializer_class = MachineSerializer
+
+class AuthUserViewSet(viewsets.ModelViewSet):
+    queryset = AuthUser.objects.all()
+    serializer_class = AuthUserSerializer
+
+class AuthRoleViewSet(viewsets.ModelViewSet):
+    queryset = AuthRole.objects.all()
+    serializer_class = AuthRoleSerializer
 
 class AlertView(APIView):
     def get(self, request):
@@ -307,8 +315,8 @@ class ProductionMetricsView(APIView):
         metrics = {
             "line_name": line.name,
             "production": production,
-            "production_rate": production_rate,
-            "efficiency": efficiency,
+            "production_rate": round(production_rate, 1),
+            "efficiency": round(efficiency, 1) ,
             "downtime": downtime,
             "availability": availability,
             "quality": quality

@@ -1,13 +1,15 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    LineViewSet, SensorTagViewSet, MachineViewSet, AlertView, DaqLogView, MachinePerformanceView, ControlPanelDataView, ProductionLineDetailView, ProductionMetricsView
+    LineViewSet, SensorTagViewSet, MachineViewSet, AlertView, DaqLogView, MachinePerformanceView, ControlPanelDataView, ProductionLineDetailView, ProductionMetricsView, AuthUserViewSet, AuthRoleViewSet
 )
 
 router = DefaultRouter()
 router.register(r'lines', LineViewSet)
 router.register(r'sensortags', SensorTagViewSet)
 router.register(r'machines', MachineViewSet)
+router.register(r'users', AuthUserViewSet)
+router.register(r'roles', AuthRoleViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -11,10 +11,11 @@ class AuthRoleSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class AuthUserSerializer(serializers.ModelSerializer):
+    role = serializers.StringRelatedField()
+
     class Meta:
         model = AuthUser
         fields = '__all__'
-        extra_kwargs = {'password': {'write_only': True}}
 
 class PlantSerializer(serializers.ModelSerializer):
     class Meta:
