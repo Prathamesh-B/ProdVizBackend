@@ -102,6 +102,18 @@ class DaqLogViewSet(viewsets.ModelViewSet):
     queryset = DaqLog.objects.all()
     serializer_class = DaqLogSerializer
 
+class PlantViewSet(viewsets.ModelViewSet):
+    queryset = Plant.objects.all()
+    serializer_class = PlantSerializer
+
+class BlockViewSet(viewsets.ModelViewSet):
+    queryset = Block.objects.all()
+    serializer_class = BlockSerializer
+
+class MachineViewSet(viewsets.ModelViewSet):
+    queryset = Machine.objects.all()
+    serializer_class = MachineSerializer
+
 class AlertView(APIView):
     def get(self, request):
         line_id = request.query_params.get('Line', None)
@@ -205,14 +217,22 @@ class ControlPanelDataView(APIView):
 
         return Response({"message": "Data logged successfully"}, status=status.HTTP_201_CREATED)
 
-class PlantViewSet(viewsets.ModelViewSet):
-    queryset = Plant.objects.all()
-    serializer_class = PlantSerializer
+class ProductionLineDetailView(APIView):
+    def get(self, request):
+        lines = Line.objects.all()
+        result = []
 
-class BlockViewSet(viewsets.ModelViewSet):
-    queryset = Block.objects.all()
-    serializer_class = BlockSerializer
+        for line in lines:
+            line_data = LineSerializer(line).data
+            machines = Machine.objects.filter(line=line)
+            line_data['machines'] = []
 
-class MachineViewSet(viewsets.ModelViewSet):
-    queryset = Machine.objects.all()
-    serializer_class = MachineSerializer
+            for machine in machines:
+                machine_data = MachineSerializer(machine).data
+                tags = SensorTag.objects.filter(machine=machine)
+                machine_data['tags'] = SensorTagSerializer(tags, many=True).data
+                line_data['machines'].append(machine_data)
+
+            result.append(line_data)
+
+        return Response(result, status=status.HTTP_200_OK)
