@@ -46,6 +46,7 @@ class DaqLogView(APIView):
         serializer = DaqLogSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+#remove in the future
 class MachinePerformanceView(APIView):
     def get(self, request):
         start_date = request.query_params.get('StartDate')
@@ -238,3 +239,79 @@ class ProductionLineDetailView(APIView):
             result.append(line_data)
 
         return Response(result, status=status.HTTP_200_OK)
+
+class ProductionMetricsView(APIView):
+    def get(self, request):
+        line_id = request.query_params.get('line_id')
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+
+        if not all([line_id, start_date, end_date]):
+            return Response(
+                {"error": "line_id, start_date, and end_date are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            start_date = parse_datetime(start_date)
+            end_date = parse_datetime(end_date)
+            if start_date is None or end_date is None:
+                raise ValueError
+        except ValueError:
+            return Response({"error": "Invalid date format."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if start_date >= end_date:
+            return Response({"error": "start_date must be before end_date."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            line = Line.objects.get(id=line_id)
+        except Line.DoesNotExist:
+            return Response({"error": "Line not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Calculate metrics
+        production_logs = DaqLog.objects.filter(
+            tag__machine__line_id=line_id,
+            tag__name__icontains='Production',
+            timestamp__range=(start_date, end_date)
+        )
+        
+        downtime_logs = DaqLog.objects.filter(
+            tag__machine__line_id=line_id,
+            tag__name__icontains='Downtime',
+            timestamp__range=(start_date, end_date)
+        )
+
+        quality_logs = DaqLog.objects.filter(
+            tag__machine__line_id=line_id,
+            tag__name__icontains='Quality',
+            timestamp__range=(start_date, end_date)
+        )
+
+        total_time = (end_date - start_date).total_seconds() / 3600  # in hours
+        
+        production = production_logs.aggregate(total_production=Sum('value'))['total_production'] or 0
+        downtime = downtime_logs.aggregate(total_downtime=Sum('value'))['total_downtime'] or 0
+        
+        production_rate = production / total_time if total_time > 0 else 0
+        availability = (total_time - downtime) / total_time if total_time > 0 else 0
+        
+        # Efficiency calculation
+        target_production = line.target_production * total_time
+        efficiency = production / target_production if target_production > 0 else 0
+
+        # Quality calculation
+        good_products = quality_logs.filter(value__gte=0.95).aggregate(total=Sum('value'))['total'] or 0
+        total_products = quality_logs.aggregate(total=Sum('value'))['total'] or 0
+        quality = good_products / total_products if total_products > 0 else 0
+
+        metrics = {
+            "line_name": line.name,
+            "production": production,
+            "production_rate": production_rate,
+            "efficiency": efficiency,
+            "downtime": downtime,
+            "availability": availability,
+            "quality": quality
+        }
+
+        return Response(metrics, status=status.HTTP_200_OK)

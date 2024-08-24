@@ -3,6 +3,7 @@ from django.db import models
 class AuthRole(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50, unique=True)
+    inactive = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'ap_AuthRole'
@@ -22,6 +23,7 @@ class AuthUser(models.Model):
     last_login = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    inactive = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'ap_AuthUser'
@@ -36,6 +38,8 @@ class Plant(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     address = models.TextField()
+    inactive = models.BooleanField(default=False)
+    modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'ap_Plant'
@@ -50,6 +54,8 @@ class Block(models.Model):
     id = models.AutoField(primary_key=True)
     plant = models.ForeignKey(Plant, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=50)
+    inactive = models.BooleanField(default=False)
+    modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'ap_Block'
@@ -64,7 +70,10 @@ class Line(models.Model):
     id = models.AutoField(primary_key=True)
     block = models.ForeignKey(Block, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=100)
+    target_production = models.IntegerField(default=0)
     status = models.CharField(max_length=50)
+    inactive = models.BooleanField(default=False)
+    modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'ap_Line'
@@ -84,6 +93,8 @@ class Machine(models.Model):
     width_px = models.IntegerField()
     x_coordinate = models.IntegerField()
     y_coordinate = models.IntegerField()
+    inactive = models.BooleanField(default=False)
+    modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'ap_Machine'
@@ -98,6 +109,8 @@ class SensorTagType(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     units = models.CharField(max_length=10)
+    inactive = models.BooleanField(default=False)
+    modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'ap_SensorTagType'
@@ -119,6 +132,8 @@ class SensorTag(models.Model):
     threshold_alert = models.CharField(max_length=100)
     continuous_record = models.BooleanField(default=False)
     frequency = models.CharField(max_length=100, null=True, blank=True)
+    inactive = models.BooleanField(default=False)
+    modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'ap_SensorTag'
@@ -134,6 +149,8 @@ class DaqLog(models.Model):
     timestamp = models.DateTimeField()
     tag = models.ForeignKey(SensorTag, on_delete=models.DO_NOTHING)
     value = models.FloatField()
+    inactive = models.BooleanField(default=False)
+    modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'ap_DaqLog'
@@ -150,6 +167,9 @@ class Alert(models.Model):
     tag = models.ForeignKey(SensorTag, on_delete=models.DO_NOTHING)
     timestamp = models.TimeField()
     name = models.CharField(max_length=100)
+    type = models.CharField(max_length=50, default='info')
+    inactive = models.BooleanField(default=False)
+    modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'ap_Alert'
@@ -169,6 +189,8 @@ class Incident(models.Model):
     tag = models.ForeignKey(SensorTag, on_delete=models.DO_NOTHING)
     date = models.DateField()
     open = models.BooleanField(default=True)
+    inactive = models.BooleanField(default=False)
+    modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'ap_Incident'
@@ -185,6 +207,8 @@ class IncidentTransaction(models.Model):
     timestamp = models.DateTimeField()
     issued_by = models.ForeignKey(AuthUser, on_delete=models.DO_NOTHING)
     msg = models.TextField(null=True, blank=True)
+    inactive = models.BooleanField(default=False)
+    modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'ap_IncidentTransaction'

@@ -1,8 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    LineViewSet, SensorTagViewSet, MachineViewSet, AlertView, DaqLogView, 
-    MachinePerformanceView, ControlPanelDataView, ProductionLineDetailView
+    LineViewSet, SensorTagViewSet, MachineViewSet, AlertView, DaqLogView, MachinePerformanceView, ControlPanelDataView, ProductionLineDetailView, ProductionMetricsView
 )
 
 router = DefaultRouter()
@@ -16,5 +15,6 @@ urlpatterns = [
     path('daqlogs/', DaqLogView.as_view(), name='daqlogs'),
     path('machine-performance/', MachinePerformanceView.as_view(), name='machine-performance'),
     path('production-line-details/', ProductionLineDetailView.as_view(), name='production-line-details'),
+    path('production-metrics/', ProductionMetricsView.as_view(), name='production-metrics'),
     path('control-panel-data/', ControlPanelDataView.as_view(), name='control-panel-data'),
 ]
