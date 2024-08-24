@@ -14,13 +14,14 @@ import random
 class DaqLogView(APIView):
     def get(self, request):
         line_id = request.query_params.get('LineId')
+        machine_id = request.query_params.get('MachineId')
         tag_id = request.query_params.get('TagId')
         start_date = request.query_params.get('StartDate')
         end_date = request.query_params.get('EndDate')
 
-        if not line_id or not tag_id or not start_date or not end_date:
+        if not all([line_id, machine_id, tag_id, start_date, end_date]):
             return Response(
-                {"error": "LineId, TagId, StartDate, and EndDate are required."},
+                {"error": "LineId, MachineId, TagId, StartDate, and EndDate are required."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -37,6 +38,7 @@ class DaqLogView(APIView):
 
         queryset = DaqLog.objects.filter(
             tag__machine__line_id=line_id,
+            tag__machine_id=machine_id,
             tag_id=tag_id,
             timestamp__range=(start_date, end_date)
         )
