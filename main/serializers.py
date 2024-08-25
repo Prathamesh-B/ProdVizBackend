@@ -33,6 +33,9 @@ class LineSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class MachineSerializer(serializers.ModelSerializer):
+    line = LineSerializer(read_only=True)
+    line_id = serializers.PrimaryKeyRelatedField(queryset=Line.objects.all(), source='line', write_only=True)
+
     class Meta:
         model = Machine
         fields = '__all__'

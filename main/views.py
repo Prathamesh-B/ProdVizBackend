@@ -1,10 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import viewsets, status
-from .models import Line, SensorTag, DaqLog, Alert, Plant, Block, Machine, AuthUser, AuthRole
+from .models import Line, SensorTag, SensorTagType, DaqLog, Alert, Plant, Block, Machine, AuthUser, AuthRole
 from .serializers import (
     LineSerializer, SensorTagSerializer, DaqLogSerializer, AlertSerializer,
-    PlantSerializer, BlockSerializer, MachineSerializer, AuthRoleSerializer, AuthUserSerializer
+    PlantSerializer, BlockSerializer, MachineSerializer, AuthRoleSerializer, AuthUserSerializer, SensorTagTypeSerializer
 )
 from django.utils.dateparse import parse_datetime
 from django.utils import timezone
@@ -100,6 +100,10 @@ class LineViewSet(viewsets.ModelViewSet):
 class SensorTagViewSet(viewsets.ModelViewSet):
     queryset = SensorTag.objects.all()
     serializer_class = SensorTagSerializer
+
+class SensorTagTypeViewSet(viewsets.ModelViewSet):
+    queryset = SensorTagType.objects.all()
+    serializer_class = SensorTagTypeSerializer
 
 class DaqLogViewSet(viewsets.ModelViewSet):
     queryset = DaqLog.objects.all()
