@@ -15,9 +15,11 @@ from .views import (
     ProductionMetricsView,
     SensorTagTypeViewSet,
     SensorTagViewSet,
+    PlantViewSet
 )
 
 router = DefaultRouter()
+router.register(r'plants', PlantViewSet)
 router.register(r'blocks', BlockViewSet)
 router.register(r'lines', LineViewSet)
 router.register(r'sensortags', SensorTagViewSet)
