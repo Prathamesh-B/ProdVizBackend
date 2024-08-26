@@ -147,7 +147,7 @@ class SensorTag(models.Model):
 class DaqLog(models.Model):
     id = models.AutoField(primary_key=True)
     timestamp = models.DateTimeField()
-    tag = models.ForeignKey(SensorTag, on_delete=models.DO_NOTHING)
+    tag = models.ForeignKey(SensorTag, on_delete=models.CASCADE)
     value = models.FloatField()
     inactive = models.BooleanField(default=False)
     modified = models.DateTimeField(auto_now=True)

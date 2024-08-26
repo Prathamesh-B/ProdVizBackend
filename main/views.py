@@ -45,6 +45,13 @@ class DaqLogView(APIView):
 
         serializer = DaqLogSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def post(self, request):
+        serializer = DaqLogSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #remove in the future
 class MachinePerformanceView(APIView):
@@ -318,7 +325,7 @@ class ProductionMetricsView(APIView):
 
         metrics = {
             "line_name": line.name,
-            "production": production,
+            "production": round(production, 1),
             "production_rate": round(production_rate, 1),
             "efficiency": round(efficiency, 1) ,
             "downtime": downtime,
