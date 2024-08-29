@@ -61,11 +61,17 @@ class AlertSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class IncidentSerializer(serializers.ModelSerializer):
+    location_name = serializers.CharField(source='location.name', read_only=True)
+    line_name = serializers.CharField(source='line.name', read_only=True)
+    tag_name = serializers.CharField(source='tag.name', read_only=True)
+
     class Meta:
         model = Incident
         fields = '__all__'
 
 class IncidentTransactionSerializer(serializers.ModelSerializer):
+    issued_by_name = serializers.CharField(source='issued_by.name', read_only=True)
+
     class Meta:
         model = IncidentTransaction
         fields = '__all__'

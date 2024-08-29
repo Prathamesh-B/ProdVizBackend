@@ -1,15 +1,41 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import viewsets, status
-from .models import Line, SensorTag, SensorTagType, DaqLog, Alert, Plant, Block, Machine, AuthUser, AuthRole
-from .serializers import (
-    LineSerializer, SensorTagSerializer, DaqLogSerializer, AlertSerializer,
-    PlantSerializer, BlockSerializer, MachineSerializer, AuthRoleSerializer, AuthUserSerializer, SensorTagTypeSerializer
-)
-from django.utils.dateparse import parse_datetime
-from django.utils import timezone
-from django.db.models import Sum
 import random
+
+from django.db.models import Sum
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+from rest_framework import status, viewsets
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .models import (
+    Alert,
+    AuthRole,
+    AuthUser,
+    Block,
+    DaqLog,
+    Incident,
+    IncidentTransaction,
+    Line,
+    Machine,
+    Plant,
+    SensorTag,
+    SensorTagType,
+)
+from .serializers import (
+    AlertSerializer,
+    AuthRoleSerializer,
+    AuthUserSerializer,
+    BlockSerializer,
+    DaqLogSerializer,
+    IncidentSerializer,
+    IncidentTransactionSerializer,
+    LineSerializer,
+    MachineSerializer,
+    PlantSerializer,
+    SensorTagSerializer,
+    SensorTagTypeSerializer,
+)
+
 
 class DaqLogView(APIView):
     def get(self, request):
@@ -193,6 +219,21 @@ class AlertView(APIView):
 
         alert.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class IncidentViewSet(viewsets.ModelViewSet):
+    queryset = Incident.objects.all()
+    serializer_class = IncidentSerializer
+
+class IncidentTransactionViewSet(viewsets.ModelViewSet):
+    queryset = IncidentTransaction.objects.all()
+    serializer_class = IncidentTransactionSerializer
+
+    def get_queryset(self):
+        queryset = IncidentTransaction.objects.all()
+        incident = self.request.query_params.get('incident', None)
+        if incident is not None:
+            queryset = queryset.filter(incident=incident)
+        return queryset
 
 class ControlPanelDataView(APIView):
     def post(self, request):

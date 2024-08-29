@@ -8,14 +8,16 @@ from .views import (
     BlockViewSet,
     ControlPanelDataView,
     DaqLogView,
+    IncidentTransactionViewSet,
+    IncidentViewSet,
     LineViewSet,
     MachinePerformanceView,
     MachineViewSet,
+    PlantViewSet,
     ProductionLineDetailView,
     ProductionMetricsView,
     SensorTagTypeViewSet,
     SensorTagViewSet,
-    PlantViewSet
 )
 
 router = DefaultRouter()
@@ -27,6 +29,8 @@ router.register(r'machines', MachineViewSet)
 router.register(r'users', AuthUserViewSet)
 router.register(r'roles', AuthRoleViewSet)
 router.register(r'tag-types', SensorTagTypeViewSet)
+router.register(r'incidents', IncidentViewSet)
+router.register(r'incident-transactions', IncidentTransactionViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
